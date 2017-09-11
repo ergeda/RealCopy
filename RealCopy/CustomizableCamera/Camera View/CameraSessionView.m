@@ -16,6 +16,7 @@
 #import "CameraDismissButton.h"
 #import "CameraFocalReticule.h"
 #import "Constants.h"
+#import "RadarView.h"
 
 @interface CameraSessionView () <CaptureSessionManagerDelegate>
 {
@@ -39,6 +40,7 @@
 @property (nonatomic, strong) CameraDismissButton *cameraDismiss;
 @property (nonatomic, strong) CameraFocalReticule *focalReticule;
 @property (nonatomic, strong) UIView *topBarView;
+@property (nonatomic, strong) RadarView *radarView;
 
 //Temporary/Diagnostic properties
 @property (nonatomic, strong) UILabel *ISOLabel, *apertureLabel, *shutterSpeedLabel;
@@ -55,38 +57,6 @@
         [self composeInterface];
         
         [[_captureManager captureSession] startRunning];
-        
-        
-        /// 边框设置
-        UIBezierPath *borderPath = [UIBezierPath bezierPathWithRect:CGRectMake(borderX, borderY, borderW, borderH)];
-        borderPath.lineCapStyle = kCGLineCapButt;
-        borderPath.lineWidth = borderLineW;
-        [self.borderColor set];
-        [borderPath stroke];
-        
-        CGFloat cornerLenght = 20;
-        /// 左上角小图标
-        UIBezierPath *leftTopPath = [UIBezierPath bezierPath];
-        leftTopPath.lineWidth = self.cornerWidth;
-        [self.cornerColor set];
-        
-        CGFloat insideExcess = fabs(0.5 * (self.cornerWidth - borderLineW));
-        CGFloat outsideExcess = 0.5 * (borderLineW + self.cornerWidth);
-        if (self.cornerLocation == CornerLoactionInside) {
-            [leftTopPath moveToPoint:CGPointMake(borderX + insideExcess, borderY + cornerLenght + insideExcess)];
-            [leftTopPath addLineToPoint:CGPointMake(borderX + insideExcess, borderY + insideExcess)];
-            [leftTopPath addLineToPoint:CGPointMake(borderX + cornerLenght + insideExcess, borderY + insideExcess)];
-        } else if (self.cornerLocation == CornerLoactionOutside) {
-            [leftTopPath moveToPoint:CGPointMake(borderX - outsideExcess, borderY + cornerLenght - outsideExcess)];
-            [leftTopPath addLineToPoint:CGPointMake(borderX - outsideExcess, borderY - outsideExcess)];
-            [leftTopPath addLineToPoint:CGPointMake(borderX + cornerLenght - outsideExcess, borderY - outsideExcess)];
-        } else {
-            [leftTopPath moveToPoint:CGPointMake(borderX, borderY + cornerLenght)];
-            [leftTopPath addLineToPoint:CGPointMake(borderX, borderY)];
-            [leftTopPath addLineToPoint:CGPointMake(borderX + cornerLenght, borderY)];
-        }
-        
-        [leftTopPath stroke];
     }
 }
 
@@ -162,9 +132,14 @@
         barButtonItemSize = CGSizeMake([[UIScreen mainScreen] bounds].size.height * 0.05, [[UIScreen mainScreen] bounds].size.height * 0.05);
     }
     
+    //Create RadarView
+    _radarView = [[RadarView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+    if (_captureManager) {
+        [self addSubview:_radarView];
+    }
+    
     //Create shutter button
     _cameraShutter = [CameraShutterButton new];
-    
     if (_captureManager) {
         
         //Button Visual attribution
