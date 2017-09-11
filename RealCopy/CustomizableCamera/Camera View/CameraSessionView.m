@@ -149,13 +149,12 @@
     }
     
     //Create the top bar and add the buttons to it
-    _topBarView = [UIView new];
-    
+    _topBarView = nil;//[UIView new];
     if (_topBarView) {
         
         //Setup visual attribution for bar
         _topBarView.frame  = (CGRect){0,0, topBarSize};
-        _topBarView.backgroundColor = [UIColor colorWithRed: 0.176 green: 0.478 blue: 0.529 alpha: 0.64];
+        //_topBarView.backgroundColor = [UIColor colorWithRed: 0.176 green: 0.478 blue: 0.529 alpha: 0.64];
         [self addSubview:_topBarView];
         
         //Add the flash button
@@ -442,7 +441,7 @@
 
 -(BOOL)shouldAutorotate
 {
-    return YES;
+    return NO;
 }
 
 -(NSUInteger)supportedInterfaceOrientations

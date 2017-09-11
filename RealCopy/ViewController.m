@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "CameraSessionView.h"
+#import "GCUIImageView.h"
 
 @interface ViewController () <CACameraSessionDelegate>
 
@@ -23,18 +24,35 @@
     _cameraView = [[CameraSessionView alloc] initWithFrame:self.view.frame];
     _cameraView.delegate = self;
     
-    [_cameraView setTopBarColor:[UIColor colorWithRed:0.97 green:0.97 blue:0.97 alpha: 0.64]];
-    [_cameraView hideFlashButton];
-    [_cameraView hideCameraToggleButton];
-    [_cameraView hideDismissButton];
-    
     [self.view addSubview:_cameraView];
 }
 
 -(void)didCaptureImage:(UIImage *)image {
-    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-    //[self.cameraView removeFromSuperview];
+    // save image to album
+    //UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+    
+    // remove camera view and show still image
+    [self.cameraView removeFromSuperview];
+
+    // prepare image view
+    GCUIImageView* stillImageView = [[GCUIImageView alloc] init];
+    [stillImageView setImage:image];
+    [stillImageView setFrame:[[UIScreen mainScreen] bounds]];
+    [self.view addSubview:stillImageView];
+    [stillImageView setup];
 }
+
+- (BOOL)shouldAutorotate
+{
+    return NO;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - image saving error handler
 
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
 {
@@ -49,11 +67,5 @@
         [self presentViewController:alert animated:YES completion:nil];
     }
 }
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 
 @end
