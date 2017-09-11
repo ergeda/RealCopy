@@ -10,9 +10,11 @@
 #import "CameraSessionView.h"
 #import "GCUIImageView.h"
 
-@interface ViewController () <CACameraSessionDelegate>
+@interface ViewController () <CACameraSessionDelegate, GCUIImageViewDelegate>
 
 @property (nonatomic, strong) CameraSessionView *cameraView;
+@property (nonatomic, strong) GCUIImageView *imageView;
+@property (nonatomic, strong) NSMutableArray *savedImages;
 
 @end
 
@@ -20,7 +22,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+
     _cameraView = [[CameraSessionView alloc] initWithFrame:self.view.frame];
     _cameraView.delegate = self;
     
@@ -35,11 +37,14 @@
     [self.cameraView removeFromSuperview];
 
     // prepare image view
-    GCUIImageView* stillImageView = [[GCUIImageView alloc] init];
-    [stillImageView setImage:image];
-    [stillImageView setFrame:[[UIScreen mainScreen] bounds]];
-    [self.view addSubview:stillImageView];
-    [stillImageView setup];
+    if (_imageView == nil) {
+        _imageView = [[GCUIImageView alloc] init];
+    }
+    _imageView.delegate = self;
+    [_imageView setImage:image];
+    [_imageView setFrame:[[UIScreen mainScreen] bounds]];
+    [_imageView setup];
+    [self.view addSubview:_imageView];
 }
 
 - (BOOL)shouldAutorotate
@@ -52,9 +57,18 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark - GCUIImageViewDelegate protoc
+-(void)switchToCameraViewAndSaveImage:(UIImage*)image
+{
+    [_savedImages addObject:image];
+    
+    [_imageView removeFromSuperview];
+    [self.view addSubview:_cameraView];
+}
+
 #pragma mark - image saving error handler
 
-- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
+-(void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
 {
     if (error) {
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Error"

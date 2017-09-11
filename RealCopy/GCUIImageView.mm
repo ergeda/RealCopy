@@ -285,7 +285,9 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 }
 
 -(void)onTapExit {
-    
+    if (self.delegate) {
+        [self.delegate switchToCameraViewAndSaveImage:self.image];
+    }
 }
 
 -(void)onTapDoneSetter {

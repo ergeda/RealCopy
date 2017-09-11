@@ -8,8 +8,21 @@
 
 #import <UIKit/UIKit.h>
 
+///Protocol Definition
+@protocol GCUIImageViewDelegate <NSObject>
+
+@optional
+-(void)switchToCameraViewAndSaveImage:(UIImage*)image;
+
+@end
+
+
 @interface GCUIImageView : UIImageView
 
+// Delegate Property
+@property (nonatomic, weak) id <GCUIImageViewDelegate> delegate;
+
+// API functions
 -(void)setup;
 
 @end

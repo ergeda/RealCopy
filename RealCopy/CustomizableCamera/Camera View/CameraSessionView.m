@@ -55,6 +55,38 @@
         [self composeInterface];
         
         [[_captureManager captureSession] startRunning];
+        
+        
+        /// 边框设置
+        UIBezierPath *borderPath = [UIBezierPath bezierPathWithRect:CGRectMake(borderX, borderY, borderW, borderH)];
+        borderPath.lineCapStyle = kCGLineCapButt;
+        borderPath.lineWidth = borderLineW;
+        [self.borderColor set];
+        [borderPath stroke];
+        
+        CGFloat cornerLenght = 20;
+        /// 左上角小图标
+        UIBezierPath *leftTopPath = [UIBezierPath bezierPath];
+        leftTopPath.lineWidth = self.cornerWidth;
+        [self.cornerColor set];
+        
+        CGFloat insideExcess = fabs(0.5 * (self.cornerWidth - borderLineW));
+        CGFloat outsideExcess = 0.5 * (borderLineW + self.cornerWidth);
+        if (self.cornerLocation == CornerLoactionInside) {
+            [leftTopPath moveToPoint:CGPointMake(borderX + insideExcess, borderY + cornerLenght + insideExcess)];
+            [leftTopPath addLineToPoint:CGPointMake(borderX + insideExcess, borderY + insideExcess)];
+            [leftTopPath addLineToPoint:CGPointMake(borderX + cornerLenght + insideExcess, borderY + insideExcess)];
+        } else if (self.cornerLocation == CornerLoactionOutside) {
+            [leftTopPath moveToPoint:CGPointMake(borderX - outsideExcess, borderY + cornerLenght - outsideExcess)];
+            [leftTopPath addLineToPoint:CGPointMake(borderX - outsideExcess, borderY - outsideExcess)];
+            [leftTopPath addLineToPoint:CGPointMake(borderX + cornerLenght - outsideExcess, borderY - outsideExcess)];
+        } else {
+            [leftTopPath moveToPoint:CGPointMake(borderX, borderY + cornerLenght)];
+            [leftTopPath addLineToPoint:CGPointMake(borderX, borderY)];
+            [leftTopPath addLineToPoint:CGPointMake(borderX + cornerLenght, borderY)];
+        }
+        
+        [leftTopPath stroke];
     }
 }
 
@@ -113,8 +145,7 @@
 -(void)composeInterface {
     
     //Adding notifier for orientation changes
-    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged:)    name:UIDeviceOrientationDidChangeNotification  object:nil];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
     
     //Define adaptable sizing variables for UI elements to the right device family (iPhone or iPad)
     if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
@@ -130,7 +161,6 @@
         topBarSize        = CGSizeMake(self.frame.size.width, [[UIScreen mainScreen] bounds].size.height * 0.07);
         barButtonItemSize = CGSizeMake([[UIScreen mainScreen] bounds].size.height * 0.05, [[UIScreen mainScreen] bounds].size.height * 0.05);
     }
-    
     
     //Create shutter button
     _cameraShutter = [CameraShutterButton new];
