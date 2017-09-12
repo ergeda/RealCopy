@@ -9,6 +9,7 @@
 #import "GCUIImageView.h"
 #import "CameraShutterButton.h"
 #import "opencv2/opencv.hpp"
+#import "SVProgressHUD.h"
 #include "graph.h"
 
 
@@ -318,38 +319,47 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 }
 
 -(void)onTapDoneSetter {
-    for(int i=0; i<inputImg.rows; i++)
-    {
-        for(int j=0; j<inputImg.cols; j++)
-        {
-            // this is the node id for the current pixel
-            GraphType::node_id currNodeId = i * inputImg.cols + j;
-            
-            // add hard constraints based on scribbles
-            if (fgScribbleMask.at<uchar>(i,j) == 255)
-                myGraph->add_tweights(currNodeId,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5), 0);
-            else if (bgScribbleMask.at<uchar>(i,j) == 255)
-                myGraph->add_tweights(currNodeId,0,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5));
-        }
-    }
+    [SVProgressHUD show];
     
-    myGraph -> maxflow();
-    
-    // copy the segmentation results on to the result images
-    for (int i = 0; i<inputImg.rows * inputImg.cols; i++)
-    {
-        // if it is foreground - color blue
-        if (myGraph->what_segment((GraphType::node_id)i ) == GraphType::SOURCE)
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // long-running code
+        for(int i=0; i<inputImg.rows; i++)
         {
-            segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 0;
+            for(int j=0; j<inputImg.cols; j++)
+            {
+                // this is the node id for the current pixel
+                GraphType::node_id currNodeId = i * inputImg.cols + j;
+                
+                // add hard constraints based on scribbles
+                if (fgScribbleMask.at<uchar>(i,j) == 255)
+                    myGraph->add_tweights(currNodeId,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5), 0);
+                else if (bgScribbleMask.at<uchar>(i,j) == 255)
+                    myGraph->add_tweights(currNodeId,0,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5));
+            }
         }
-        // if it is background - color red
-        else
+        
+        myGraph -> maxflow();
+        
+        // copy the segmentation results on to the result images
+        for (int i = 0; i<inputImg.rows * inputImg.cols; i++)
         {
-            segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 255;
+            // if it is foreground - color blue
+            if (myGraph->what_segment((GraphType::node_id)i ) == GraphType::SOURCE)
+            {
+                segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 0;
+            }
+            // if it is background - color red
+            else
+            {
+                segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 255;
+            }
         }
-    }
-    self.image = [self maskImage:_resImage withMask:[self UIImageFromCVMat:segMask]];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.image = [self maskImage:_resImage withMask:[self UIImageFromCVMat:segMask]];
+            [SVProgressHUD dismiss];
+        });
+    });
 }
 
 - (cv::Mat)cvMatFromUIImage:(UIImage *)image
