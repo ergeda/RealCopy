@@ -7,11 +7,8 @@
 //
 
 #import "GCUIImageView.h"
-#import "ForegroundSetterButton.h"
-#import "BackgroundSetterButton.h"
 #import "CameraShutterButton.h"
 #import "opencv2/opencv.hpp"
-#import "SVProgressHUD.h"
 #include "graph.h"
 
 
@@ -20,6 +17,7 @@
 
 -(UIImage*)scaleToSize:(CGSize)size;
 -(UIImage*)getSubImage:(CGRect)rect;
+-(UIImage *)convertToSize:(CGSize)size;
 
 @end
 
@@ -39,6 +37,17 @@
         CGImageRelease(subImageRef);
         
         return smallImage;
+    }
+}
+
+- (UIImage *)convertToSize:(CGSize)size {
+    @autoreleasepool{
+        UIGraphicsBeginImageContext(size);
+        [self drawInRect:CGRectMake(0, 0, size.width, size.height)];
+        UIImage *destImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        return destImage;
     }
 }
 
@@ -147,12 +156,16 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     
     IplImage* img;
     CvPoint prev_pt;
+    
+    // Radar rect
+    CGRect radarRect;
 }
 
-@property (nonatomic, strong) ForegroundSetterButton *foregroundSetterButton;
-@property (nonatomic, strong) BackgroundSetterButton *backgroundSetterButton;
+@property (nonatomic, strong) CameraShutterButton *foregroundSetterButton;
+@property (nonatomic, strong) CameraShutterButton *backgroundSetterButton;
 @property (nonatomic, strong) CameraShutterButton *doneSetterButton;
 @property (nonatomic, strong) CameraShutterButton *exitButton;
+@property (nonatomic, strong) UIImage *resImage;
 
 @end
 
@@ -169,8 +182,8 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 -(id)init {
     if (self = [super init]) {
         //Create color picker button
-        _foregroundSetterButton = [ForegroundSetterButton new];
-        _backgroundSetterButton = [BackgroundSetterButton new];
+        _foregroundSetterButton = [CameraShutterButton new];
+        _backgroundSetterButton = [CameraShutterButton new];
         _doneSetterButton = [CameraShutterButton new];
         _exitButton = [CameraShutterButton new];
         
@@ -209,6 +222,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         _foregroundSetterButton.center = CGPointMake(self.frame.size.width * 0.2, self.frame.size.height*0.875);
         _foregroundSetterButton.tag = ForegroundSetterTag;
         _foregroundSetterButton.backgroundColor = [UIColor clearColor];
+        [_foregroundSetterButton setForegroundColor:[UIColor redColor]];
         
         //Button target
         [_foregroundSetterButton addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];
@@ -222,6 +236,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         _backgroundSetterButton.center = CGPointMake(self.frame.size.width * 0.4, self.frame.size.height*0.875);
         _backgroundSetterButton.tag = BackgroundSetterTag;
         _backgroundSetterButton.backgroundColor = [UIColor clearColor];
+        [_backgroundSetterButton setForegroundColor:[UIColor blueColor]];
         
         //Button target
         [_backgroundSetterButton addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];
@@ -235,6 +250,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         _doneSetterButton.center = CGPointMake(self.frame.size.width * 0.6, self.frame.size.height*0.875);
         _doneSetterButton.tag = DoneSetterTag;
         _doneSetterButton.backgroundColor = [UIColor clearColor];
+        [_doneSetterButton setForegroundColor:[UIColor blackColor]];
         
         //Button target
         [_doneSetterButton addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];
@@ -248,6 +264,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         _exitButton.center = CGPointMake(self.frame.size.width * 0.8, self.frame.size.height*0.875);
         _exitButton.tag = ExitTag;
         _exitButton.backgroundColor = [UIColor clearColor];
+        [_exitButton setForegroundColor:[UIColor whiteColor]];
         
         //Button target
         [_exitButton addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];
@@ -255,12 +272,18 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     }
 }
 
--(void)setup {
+-(void)setupWithRadarSize:(CGRect)rect {
     [self initColorPicker];
 
+    // set radar rect
+    radarRect = rect;
+    
     // setup images
     if (self.image) {
         self.image = [self.image scaleToSize:[self frameForImage:self.image inImageViewAspectFit:self].size];
+        // save a image copy before graphcut
+        _resImage = [UIImage imageWithCGImage:[self.image CGImage]];
+        // for graph cut
         img = [self CreateIplImageFromUIImage:self.image];
         inputImg = [self cvMatFromUIImage:self.image];
         cv::cvtColor(inputImg, inputImg, CV_RGBA2RGB);
@@ -286,13 +309,15 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 
 -(void)onTapExit {
     if (self.delegate) {
-        [self.delegate switchToCameraViewAndSaveImage:self.image];
+        // crop image within radar and resize to 127*127
+        UIImage* crop = [self.image getSubImage:radarRect];
+        UIImage* small = [crop convertToSize:CGSizeMake(127, 127)];
+        
+        [self.delegate switchToCameraViewAndSaveImage:small];
     }
 }
 
 -(void)onTapDoneSetter {
-    [SVProgressHUD show];
-    
     for(int i=0; i<inputImg.rows; i++)
     {
         for(int j=0; j<inputImg.cols; j++)
@@ -324,9 +349,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
             segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 255;
         }
     }
-    self.image = [self maskImage:self.image withMask:[self UIImageFromCVMat:segMask]];
-    
-    [SVProgressHUD dismiss];
+    self.image = [self maskImage:_resImage withMask:[self UIImageFromCVMat:segMask]];
 }
 
 - (cv::Mat)cvMatFromUIImage:(UIImage *)image
@@ -348,7 +371,6 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     
     CGContextDrawImage(contextRef, CGRectMake(0, 0, cols, rows), image.CGImage);
     CGContextRelease(contextRef);
-    //CGColorSpaceRelease(colorSpace);
     
     return cvMat;
 }
@@ -367,20 +389,18 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     CGDataProviderRef provider = CGDataProviderCreateWithCFData(( CFDataRef)data);
     
     // Creating CGImage from cv::Mat
-    CGImageRef imageRef = CGImageCreate(cvMat.cols,                                 //width
-                                        cvMat.rows,                                 //height
-                                        8,                                          //bits per component
-                                        8 * cvMat.elemSize(),                       //bits per pixel
-                                        cvMat.step[0],                            //bytesPerRow
-                                        colorSpace,                                 //colorspace
+    CGImageRef imageRef = CGImageCreate(cvMat.cols,                                 // width
+                                        cvMat.rows,                                 // height
+                                        8,                                          // bits per component
+                                        8 * cvMat.elemSize(),                       // bits per pixel
+                                        cvMat.step[0],                              // bytesPerRow
+                                        colorSpace,                                 // colorspace
                                         kCGImageAlphaNone|kCGBitmapByteOrderDefault,// bitmap info
-                                        provider,                                   //CGDataProviderRef
-                                        NULL,                                       //decode
-                                        false,                                      //should interpolate
-                                        kCGRenderingIntentDefault                   //intent
+                                        provider,                                   // CGDataProviderRef
+                                        NULL,                                       // decode
+                                        false,                                      // should interpolate
+                                        kCGRenderingIntentDefault                   // intent
                                         );
-    
-    
     // Getting UIImage from CGImage
     UIImage *finalImage = [UIImage imageWithCGImage:imageRef];
     CGImageRelease(imageRef);

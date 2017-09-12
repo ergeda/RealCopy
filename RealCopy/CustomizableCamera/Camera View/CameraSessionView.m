@@ -65,9 +65,13 @@
     return self;
 }
 
-- (id)initWithCoder:(NSCoder *)aDecoder {
+-(id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     return self;
+}
+
+-(CGRect)radarSize {
+    return [_radarView radarSize];
 }
 
 #pragma mark - Setup
@@ -147,6 +151,7 @@
         _cameraShutter.center = CGPointMake(self.frame.size.width/2, self.frame.size.height*0.875);
         _cameraShutter.tag = ShutterButtonTag;
         _cameraShutter.backgroundColor = [UIColor clearColor];
+        [_cameraShutter setForegroundColor:[UIColor whiteColor]];
         
         //Button target
         [_cameraShutter addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];

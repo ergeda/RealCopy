@@ -21,14 +21,16 @@
 
 #pragma mark Drawing Methods
 
-+ (void)drawForegroundSetterWithFrame: (CGRect)frame
-{
++ (void)drawCameraShutterWithFrame: (CGRect)frame withForegroundColor:(UIColor*)foregroundColor {
     //// General Declarations
     CGContextRef context = UIGraphicsGetCurrentContext();
     
+    CGFloat r, g, b, a;
+    [foregroundColor getRed:&r green:&g blue:&b alpha:&a];
+    
     //// Color Declarations
-    UIColor* color0 = [UIColor colorWithRed: 1 green: 0 blue: 0 alpha: 1];
-    UIColor* color1 = [UIColor colorWithRed: 0.812 green: 0 blue: 0 alpha: 0.62];
+    UIColor* color0 = [UIColor colorWithRed:r green:g blue:b alpha: 1];
+    UIColor* color1 = [UIColor colorWithRed:r*0.812 green:g*0.812 blue:b*0.812 alpha: 0.62];
     
     
     //// Subframes
@@ -44,84 +46,6 @@
             CGContextBeginTransparencyLayer(context, NULL);
             
             
-            //// ForegroundSetterVector Drawing
-            UIBezierPath* cameraShutterVectorPath = [UIBezierPath bezierPathWithOvalInRect: CGRectMake(CGRectGetMinX(page1) + floor(CGRectGetWidth(page1) * 0.00000 + 0.5), CGRectGetMinY(page1) + floor(CGRectGetHeight(page1) * 0.00000 + 0.5), floor(CGRectGetWidth(page1) * 1.00000 + 0.5) - floor(CGRectGetWidth(page1) * 0.00000 + 0.5), floor(CGRectGetHeight(page1) * 1.00000 + 0.5) - floor(CGRectGetHeight(page1) * 0.00000 + 0.5))];
-            [color1 setFill];
-            [cameraShutterVectorPath fill];
-            [color0 setStroke];
-            cameraShutterVectorPath.lineWidth = 3;
-            [cameraShutterVectorPath stroke];
-            
-            
-            CGContextEndTransparencyLayer(context);
-            CGContextRestoreGState(context);
-        }
-    }
-
-}
-
-+ (void)drawBackgroundSetterWithFrame: (CGRect)frame
-{
-    //// General Declarations
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    //// Color Declarations
-    UIColor* color0 = [UIColor colorWithRed: 0 green: 0 blue: 1 alpha: 1];
-    UIColor* color1 = [UIColor colorWithRed: 0 green: 0 blue: 0.812 alpha: 0.62];
-    
-    
-    //// Subframes
-    CGRect page1 = CGRectMake(CGRectGetMinX(frame) + floor(CGRectGetWidth(frame) * 0.03691 + 0.12) + 0.38, CGRectGetMinY(frame) + floor(CGRectGetHeight(frame) * 0.03466 + 0.43) + 0.07, floor(CGRectGetWidth(frame) * 0.96691 + 0.12) - floor(CGRectGetWidth(frame) * 0.03691 + 0.12), floor(CGRectGetHeight(frame) * 0.96466 + 0.43) - floor(CGRectGetHeight(frame) * 0.03466 + 0.43));
-    
-    
-    //// Page-1
-    {
-        //// Portrait
-        {
-            CGContextSaveGState(context);
-            CGContextSetAlpha(context, 0.62);
-            CGContextBeginTransparencyLayer(context, NULL);
-            
-            
-            //// ForegroundSetterVector Drawing
-            UIBezierPath* cameraShutterVectorPath = [UIBezierPath bezierPathWithOvalInRect: CGRectMake(CGRectGetMinX(page1) + floor(CGRectGetWidth(page1) * 0.00000 + 0.5), CGRectGetMinY(page1) + floor(CGRectGetHeight(page1) * 0.00000 + 0.5), floor(CGRectGetWidth(page1) * 1.00000 + 0.5) - floor(CGRectGetWidth(page1) * 0.00000 + 0.5), floor(CGRectGetHeight(page1) * 1.00000 + 0.5) - floor(CGRectGetHeight(page1) * 0.00000 + 0.5))];
-            [color1 setFill];
-            [cameraShutterVectorPath fill];
-            [color0 setStroke];
-            cameraShutterVectorPath.lineWidth = 3;
-            [cameraShutterVectorPath stroke];
-            
-            
-            CGContextEndTransparencyLayer(context);
-            CGContextRestoreGState(context);
-        }
-    }
-
-}
-
-+ (void)drawCameraShutterWithFrame: (CGRect)frame
-{
-    //// General Declarations
-    CGContextRef context = UIGraphicsGetCurrentContext();
-
-    //// Color Declarations
-    UIColor* color0 = [UIColor colorWithRed: 1 green: 1 blue: 1 alpha: 1];
-    UIColor* color1 = [UIColor colorWithRed: 0.812 green: 0.812 blue: 0.812 alpha: 0.62];
-
-
-    //// Subframes
-    CGRect page1 = CGRectMake(CGRectGetMinX(frame) + floor(CGRectGetWidth(frame) * 0.03691 + 0.12) + 0.38, CGRectGetMinY(frame) + floor(CGRectGetHeight(frame) * 0.03466 + 0.43) + 0.07, floor(CGRectGetWidth(frame) * 0.96691 + 0.12) - floor(CGRectGetWidth(frame) * 0.03691 + 0.12), floor(CGRectGetHeight(frame) * 0.96466 + 0.43) - floor(CGRectGetHeight(frame) * 0.03466 + 0.43));
-
-
-    //// Page-1
-    {
-        //// Portrait
-        {
-            CGContextSaveGState(context);
-            CGContextSetAlpha(context, 0.62);
-            CGContextBeginTransparencyLayer(context, NULL);
-
-
             //// CameraShutterVector Drawing
             UIBezierPath* cameraShutterVectorPath = [UIBezierPath bezierPathWithOvalInRect: CGRectMake(CGRectGetMinX(page1) + floor(CGRectGetWidth(page1) * 0.00000 + 0.5), CGRectGetMinY(page1) + floor(CGRectGetHeight(page1) * 0.00000 + 0.5), floor(CGRectGetWidth(page1) * 1.00000 + 0.5) - floor(CGRectGetWidth(page1) * 0.00000 + 0.5), floor(CGRectGetHeight(page1) * 1.00000 + 0.5) - floor(CGRectGetHeight(page1) * 0.00000 + 0.5))];
             [color1 setFill];
@@ -129,12 +53,13 @@
             [color0 setStroke];
             cameraShutterVectorPath.lineWidth = 3;
             [cameraShutterVectorPath stroke];
-
-
+            
+            
             CGContextEndTransparencyLayer(context);
             CGContextRestoreGState(context);
         }
     }
+
 }
 
 + (void)drawCameraFlashWithFrame: (CGRect)frame

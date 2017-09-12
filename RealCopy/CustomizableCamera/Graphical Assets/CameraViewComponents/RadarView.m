@@ -32,6 +32,10 @@
     _backgroundAlpha = 0.5;
 }
 
+-(CGRect)radarSize {
+    return CGRectMake(scanBorderX, scanBorderY, scanBorderW, scanBorderW);
+}
+
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
     

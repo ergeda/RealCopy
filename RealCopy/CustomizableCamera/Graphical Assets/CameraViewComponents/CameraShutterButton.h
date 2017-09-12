@@ -10,4 +10,6 @@
 
 @interface CameraShutterButton : UIButton
 
+-(void)setForegroundColor:(UIColor *)foregroundColor;
+
 @end

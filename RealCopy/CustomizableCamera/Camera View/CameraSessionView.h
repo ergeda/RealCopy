@@ -25,5 +25,6 @@
 - (void)hideFlashButton;
 - (void)hideCameraToggleButton;
 - (void)hideDismissButton;
+- (CGRect)radarSize;
 
 @end

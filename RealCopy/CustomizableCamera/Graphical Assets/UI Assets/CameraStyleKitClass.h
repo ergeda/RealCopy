@@ -15,9 +15,7 @@
 @interface CameraStyleKitClass : NSObject
 
 // Drawing Methods
-+ (void)drawForegroundSetterWithFrame: (CGRect)frame;
-+ (void)drawBackgroundSetterWithFrame: (CGRect)frame;
-+ (void)drawCameraShutterWithFrame: (CGRect)frame;
++ (void)drawCameraShutterWithFrame: (CGRect)frame withForegroundColor:(UIColor*)foregroundColor;
 + (void)drawCameraFlashWithFrame: (CGRect)frame;
 + (void)drawCameraToggleWithFrame: (CGRect)frame;
 + (void)drawCameraDismissWithFrame: (CGRect)frame;

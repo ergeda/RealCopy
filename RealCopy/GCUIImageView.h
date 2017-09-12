@@ -23,6 +23,6 @@
 @property (nonatomic, weak) id <GCUIImageViewDelegate> delegate;
 
 // API functions
--(void)setup;
+-(void)setupWithRadarSize:(CGRect)rect;
 
 @end

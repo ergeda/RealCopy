@@ -3,4 +3,6 @@
 
 @interface RadarView : UIView
 
+-(CGRect)radarSize;
+
 @end

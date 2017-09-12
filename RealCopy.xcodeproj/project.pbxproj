@@ -69,10 +69,9 @@
 		448B70C71F65765E00DBA03A /* CLTextTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70931F65765D00DBA03A /* CLTextTool.m */; };
 		448B70C81F65765E00DBA03A /* SVProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 448B70951F65765D00DBA03A /* SVProgressHUD.bundle */; };
 		448B70C91F65765E00DBA03A /* SVProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70971F65765D00DBA03A /* SVProgressHUD.m */; };
-		448B70CE1F657CA700DBA03A /* BackgroundSetterButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70CB1F657CA700DBA03A /* BackgroundSetterButton.m */; };
-		448B70CF1F657CA700DBA03A /* ForegroundSetterButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70CD1F657CA700DBA03A /* ForegroundSetterButton.m */; };
 		448B70D71F664D0D00DBA03A /* GCUIImageView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 448B70D61F664D0D00DBA03A /* GCUIImageView.mm */; };
 		448B70DA1F66AEFC00DBA03A /* RadarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70D91F66AEFC00DBA03A /* RadarView.m */; };
+		448B70DE1F67E5D400DBA03A /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 448B70DD1F67E5D400DBA03A /* splash.png */; };
 		44C06A8D1F6542F7003802DD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 44C06A8C1F6542F7003802DD /* main.m */; };
 		44C06A901F6542F7003802DD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 44C06A8F1F6542F7003802DD /* AppDelegate.m */; };
 		44C06A931F6542F7003802DD /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44C06A921F6542F7003802DD /* ViewController.m */; };
@@ -221,14 +220,11 @@
 		448B70951F65765D00DBA03A /* SVProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVProgressHUD.bundle; sourceTree = "<group>"; };
 		448B70961F65765D00DBA03A /* SVProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVProgressHUD.h; sourceTree = "<group>"; };
 		448B70971F65765D00DBA03A /* SVProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVProgressHUD.m; sourceTree = "<group>"; };
-		448B70CA1F657CA700DBA03A /* BackgroundSetterButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BackgroundSetterButton.h; sourceTree = "<group>"; };
-		448B70CB1F657CA700DBA03A /* BackgroundSetterButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BackgroundSetterButton.m; sourceTree = "<group>"; };
-		448B70CC1F657CA700DBA03A /* ForegroundSetterButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ForegroundSetterButton.h; sourceTree = "<group>"; };
-		448B70CD1F657CA700DBA03A /* ForegroundSetterButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ForegroundSetterButton.m; sourceTree = "<group>"; };
 		448B70D31F657FB000DBA03A /* GCUIImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCUIImageView.h; sourceTree = "<group>"; };
 		448B70D61F664D0D00DBA03A /* GCUIImageView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GCUIImageView.mm; sourceTree = "<group>"; };
 		448B70D81F66AEFC00DBA03A /* RadarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RadarView.h; sourceTree = "<group>"; };
 		448B70D91F66AEFC00DBA03A /* RadarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RadarView.m; sourceTree = "<group>"; };
+		448B70DD1F67E5D400DBA03A /* splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = splash.png; path = ../../../Desktop/splash.png; sourceTree = "<group>"; };
 		44C06A881F6542F7003802DD /* RealCopy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RealCopy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44C06A8C1F6542F7003802DD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		44C06A8E1F6542F7003802DD /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -310,10 +306,6 @@
 			children = (
 				448B70D81F66AEFC00DBA03A /* RadarView.h */,
 				448B70D91F66AEFC00DBA03A /* RadarView.m */,
-				448B70CA1F657CA700DBA03A /* BackgroundSetterButton.h */,
-				448B70CB1F657CA700DBA03A /* BackgroundSetterButton.m */,
-				448B70CC1F657CA700DBA03A /* ForegroundSetterButton.h */,
-				448B70CD1F657CA700DBA03A /* ForegroundSetterButton.m */,
 				448B6FFF1F654DA700DBA03A /* CameraDismissButton.h */,
 				448B70001F654DA700DBA03A /* CameraDismissButton.m */,
 				448B70011F654DA700DBA03A /* CameraFlashButton.h */,
@@ -666,6 +658,7 @@
 		44C06A8B1F6542F7003802DD /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				448B70DD1F67E5D400DBA03A /* splash.png */,
 				44C06A8C1F6542F7003802DD /* main.m */,
 			);
 			name = "Supporting Files";
@@ -814,6 +807,7 @@
 				448B70C81F65765E00DBA03A /* SVProgressHUD.bundle in Resources */,
 				44C06A981F6542F7003802DD /* Assets.xcassets in Resources */,
 				448B701D1F654DA700DBA03A /* PaintCodeFile.pcvd in Resources */,
+				448B70DE1F67E5D400DBA03A /* splash.png in Resources */,
 				448B701C1F654DA700DBA03A /* Cool Camera Mockup.sketch in Resources */,
 				44C06A961F6542F7003802DD /* Main.storyboard in Resources */,
 			);
@@ -840,7 +834,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				448B70CF1F657CA700DBA03A /* ForegroundSetterButton.m in Sources */,
 				44C06A931F6542F7003802DD /* ViewController.m in Sources */,
 				448B70B51F65765D00DBA03A /* UIDevice+SystemVersion.m in Sources */,
 				448B70C31F65765E00DBA03A /* CLPickerDrum.m in Sources */,
@@ -861,7 +854,6 @@
 				448B70BF1F65765E00DBA03A /* CLGPUImageVignetteFilter.m in Sources */,
 				448B70D71F664D0D00DBA03A /* GCUIImageView.mm in Sources */,
 				448B70C71F65765E00DBA03A /* CLTextTool.m in Sources */,
-				448B70CE1F657CA700DBA03A /* BackgroundSetterButton.m in Sources */,
 				448B70AD1F65765D00DBA03A /* CLCircleView.m in Sources */,
 				448B70AE1F65765D00DBA03A /* CLColorPickerView.m in Sources */,
 				448B70C21F65765E00DBA03A /* CLFontPickerView.m in Sources */,
