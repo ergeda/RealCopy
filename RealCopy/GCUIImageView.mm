@@ -284,11 +284,11 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         self.image = [self.image scaleToSize:[self frameForImage:self.image inImageViewAspectFit:self].size];
         // save a image copy before graphcut
         _resImage = [UIImage imageWithCGImage:[self.image CGImage]];
-        // for graph cut
+        // prepare for graph cut
         img = [self CreateIplImageFromUIImage:self.image];
         inputImg = [self cvMatFromUIImage:self.image];
         cv::cvtColor(inputImg, inputImg, CV_RGBA2RGB);
-        setupImages();
+        setupOthers();
     }
 }
 
@@ -299,12 +299,28 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     //If sender does not inherit from 'UIButton', return
     if (![sender isKindOfClass:[UIButton class]]) return;
     
+    [self buttonAnimation:[(UIButton *)sender tag]];
+    
     //Input manager switch
     switch ([(UIButton *)sender tag]) {
         case ForegroundSetterTag:  currentMode = 0;  return;
         case BackgroundSetterTag:  currentMode = 1;  return;
         case DoneSetterTag:  [self onTapDoneSetter];  return;
         case ExitTag:  [self onTapExit];  return;
+    }
+}
+
+-(void)buttonAnimation:(NSInteger)tag {
+    _foregroundSetterButton.transform = CGAffineTransformMakeScale(1.0, 1.0);
+    _backgroundSetterButton.transform = CGAffineTransformMakeScale(1.0, 1.0);
+    _doneSetterButton.transform = CGAffineTransformMakeScale(1.0, 1.0);
+    _exitButton.transform = CGAffineTransformMakeScale(1.0, 1.0);
+    
+    switch (tag) {
+        case ForegroundSetterTag: _foregroundSetterButton.transform = CGAffineTransformMakeScale(1.25, 1.25); return;
+        case BackgroundSetterTag: _backgroundSetterButton.transform = CGAffineTransformMakeScale(1.25, 1.25); return;
+        case DoneSetterTag: _doneSetterButton.transform = CGAffineTransformMakeScale(1.25, 1.25); return;
+        case ExitTag: _exitButton.transform = CGAffineTransformMakeScale(1.25, 1.25); return;
     }
 }
 
@@ -362,7 +378,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     });
 }
 
-- (cv::Mat)cvMatFromUIImage:(UIImage *)image
+-(cv::Mat)cvMatFromUIImage:(UIImage *)image
 {
     CGColorSpaceRef colorSpace = CGImageGetColorSpace(image.CGImage);
     CGFloat cols = image.size.width;
@@ -476,104 +492,6 @@ struct Node
     Node* next;
 };
 
-IplImage* RegionGrow(IplImage* src, int seedx, int seedy, int threshold, bool flag)
-{
-    if(!src || src->nChannels != 1)return src;
-    
-    int width = src->width;
-    int height = src->height;
-    int srcwidthstep = src->widthStep;
-    uchar* img = (uchar*)src->imageData;
-    
-    IplImage *dst = cvCreateImage(cvGetSize(src), 8, 1);
-    cvZero(dst);
-    
-    // flag
-    IplImage* M = cvCreateImage(cvSize(width, height), 8, 1);
-    int Mwidthstep = M->widthStep;
-    
-    cvZero(M);
-    M->imageData[seedy * Mwidthstep + seedx] = 1;    // seed:1, others:0
-    
-    CvScalar cur = CV_RGB(255, 255, 255);
-    cvSet2D(dst, seedy, seedx, cur);
-    
-    int start = 0;
-    int end = 1;
-    
-    Node *queue = new Node;
-    queue->x = seedx;
-    queue->y = seedy;
-    queue->next = NULL;
-    Node *first = queue;
-    Node *last = queue;
-    
-    while (end - start > 0)
-    {
-        int x = first->x;
-        int y = first->y;
-        uchar pixel = (uchar)img[y * srcwidthstep + x];
-        
-        for (int yy = -1; yy<=1; yy++)
-        {
-            for (int xx = -1; xx<=1; xx++)
-            {
-                if(flag)
-                    if ( abs(yy) && abs(xx))
-                        continue;
-                
-                int cx = x + xx;
-                int cy = y + yy;
-                if (cx >= 0 && cx <width && cy >=0 && cy < height)
-                {
-                    if (abs(img[cy * srcwidthstep + cx] - pixel) <= threshold &&
-                        M->imageData[cy * Mwidthstep + cx] != 1)
-                    {
-                        Node *node = new Node;
-                        node->x = cx;
-                        node->y = cy;
-                        node->next = NULL;
-                        
-                        end++;
-                        last->next = node;
-                        last = node;
-                        
-                        M->imageData[cy * Mwidthstep + cx] = 1;
-                        
-                        cvSet2D(dst, cy, cx, cur);
-                    }
-                }
-            }
-        }
-        Node* temp = first;
-        first = first->next;
-        delete temp;
-        start++;
-    }
-    
-    cvReleaseImage(&M);
-    cvReleaseImage(&src);
-    
-    return dst;
-}
-
--(UIImage *)xorColorWithOpenCV:(UIImage* )image
-{
-    IplImage* src = [self CreateIplImageFromUIImage:image];
-    
-    cvNot(src, src);
-    
-    return [self CreateUIImageFromIplImage:src];
-}
-
--(UIImage *)RegionGrowWithOpenCV:(UIImage* )image withCGPoint:(CGPoint)point
-{
-    IplImage* src = [self CreateIplImageFromUIImage:image];
-    
-    return [self CreateUIImageFromIplImage:RegionGrow(src, point.x, point.y, 0, false)];
-}
-
-
 // get bin index for each image pixel, store it in binPerPixelImg
 void getBinPerPixel(cv::Mat & binPerPixelImg, cv::Mat & inputImg, int numBinsPerChannel, int & numUsedBins)
 {
@@ -686,8 +604,8 @@ void getEdgeVariance(cv::Mat& inputImg, cv::Mat& showEdgesImg, float& varianceSq
     }
 }
 
-// init all images/vars
-int setupImages()
+// init all matrix/vars
+int setupOthers()
 {
     // Check for invalid input
     if(!inputImg.data)
@@ -725,7 +643,7 @@ int setupImages()
             
             // add hard constraints based on scribbles
             if (fgScribbleMask.at<uchar>(i,j) == 255)
-                myGraph->add_tweights(currNodeId,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5),0);
+                myGraph->add_tweights(currNodeId,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5), 0);
             else if (bgScribbleMask.at<uchar>(i,j) == 255)
                 myGraph->add_tweights(currNodeId,0,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5));
             
@@ -801,13 +719,13 @@ int setupImages()
         if(prev_pt.x < 0)
             prev_pt = pt;
 
-        cvLine(img, prev_pt, pt, paintColor[currentMode], 10, 8, 0);
+        cvLine(img, prev_pt, pt, paintColor[currentMode], 5, 8, 0);
         if (currentMode == 0) {
-            line(fgScribbleMask, prev_pt, pt, 255, 10, 8, 0);
-            //circle(fgScribbleMask,pt,scribbleRadius, 255,-1);
+            line(fgScribbleMask, prev_pt, pt, 255, 5, 8, 0);
+            line(bgScribbleMask, prev_pt, pt, 0, 5, 8, 0);
         }else{
-            line(bgScribbleMask, prev_pt, pt, 255, 10, 8, 0);
-            //circle(bgScribbleMask,pt,scribbleRadius, 255,-1);
+            line(bgScribbleMask, prev_pt, pt, 255, 5, 8, 0);
+            line(fgScribbleMask, prev_pt, pt, 0, 5, 8, 0);
         }
         prev_pt = pt;
         self.image = [self CreateUIImageFromIplImage:img];
@@ -818,7 +736,7 @@ int setupImages()
 {
     CGPoint locationPoint = [[touches anyObject] locationInView:self];
     CGRect imageFrame = [self frameForImage:self.image inImageViewAspectFit:self];
-    prev_pt = cv::Point2f(locationPoint.x - imageFrame.origin.x,locationPoint.y - imageFrame.origin.y);
+    prev_pt = cv::Point2f(locationPoint.x - imageFrame.origin.x, locationPoint.y - imageFrame.origin.y);
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -833,9 +751,7 @@ int setupImages()
 }
 
 - (UIImage*)maskImage:(UIImage *)image withMask:(UIImage *)maskImage {
-    
     CGImageRef maskRef = maskImage.CGImage;
-    
     CGImageRef mask = CGImageMaskCreate(CGImageGetWidth(maskRef),
                                         CGImageGetHeight(maskRef),
                                         CGImageGetBitsPerComponent(maskRef),

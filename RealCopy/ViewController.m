@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "CameraSessionView.h"
 #import "GCUIImageView.h"
+#import "SVProgressHUD.h"
 #import <QuartzCore/QuartzCore.h>
 
 @interface ViewController () <CACameraSessionDelegate, GCUIImageViewDelegate>
@@ -71,9 +72,6 @@
 
 -(void)showSavedImage:(UIImage*)image
 {
-    // save image to album
-    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-    
     // layout the result and button
     NSUInteger count = [_savedImages count];
     CGFloat width = 118;
@@ -87,6 +85,7 @@
     [_syncToWindows setFrame:CGRectMake(5, top + (height + 5), 365, 50)];
     [_syncToWindows setTitle:@"Copy to Windows" forState:UIControlStateNormal];
     [_syncToWindows setBackgroundColor:[[UIColor whiteColor] colorWithAlphaComponent:0.5f]];
+    [_syncToWindows addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];
     [_cameraView addSubview:_syncToWindows];
     
     [_savedImages addObject:image];
@@ -97,6 +96,33 @@
     [savedImageView.layer setBorderColor: [[UIColor whiteColor] CGColor]];
     [savedImageView.layer setBorderWidth: 1.0];
     [_cameraView addSubview:savedImageView];
+    
+    // save image to album
+    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+    // sync to OneDrive/GoogleDrive
+}
+
+-(void)syncToCloud
+{
+    [SVProgressHUD show];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        // code to upload
+        [NSThread sleepForTimeInterval:.0f];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD dismiss];
+        });
+    });
+
+}
+
+#pragma mark - User Interaction
+
+-(void)inputManager:(id)sender {
+    //If sender does not inherit from 'UIButton', return
+    if (![sender isKindOfClass:[UIButton class]]) return;
+    
+    [self syncToCloud];
 }
 
 #pragma mark - image saving error handler
