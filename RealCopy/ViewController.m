@@ -107,7 +107,7 @@
     [SVProgressHUD show];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // code to upload
-        [NSThread sleepForTimeInterval:.0f];
+        [NSThread sleepForTimeInterval:5.0f];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [SVProgressHUD dismiss];
