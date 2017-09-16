@@ -18,6 +18,7 @@
 @property (nonatomic, strong) GCUIImageView *imageView;
 @property (nonatomic, strong) UIButton *syncToWindows;
 @property (nonatomic, strong) NSMutableArray *savedImages;
+@property (nonatomic, strong) UISwipeGestureRecognizer *recognizer;
 
 @end
 
@@ -26,6 +27,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    _recognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeFrom:)];
+    [_recognizer setDirection:UISwipeGestureRecognizerDirectionUp];
+    
     _savedImages = [[NSMutableArray alloc] init];
     
     _cameraView = [[CameraSessionView alloc] initWithFrame:self.view.frame];
@@ -81,10 +85,11 @@
     
     // lazy man style
     if (_syncToWindows) [_syncToWindows removeFromSuperview];
-    else _syncToWindows = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    else _syncToWindows = [UIButton buttonWithType:UIButtonTypeSystem];
     [_syncToWindows setFrame:CGRectMake(5, top + (height + 5), 365, 50)];
     [_syncToWindows setTitle:@"Copy to Windows" forState:UIControlStateNormal];
-    [_syncToWindows setBackgroundColor:[[UIColor whiteColor] colorWithAlphaComponent:0.5f]];
+    _syncToWindows.titleLabel.font = [UIFont systemFontOfSize:20.0];
+    [_syncToWindows setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_syncToWindows addTarget:self action:@selector(inputManager:) forControlEvents:UIControlEventTouchUpInside];
     [_cameraView addSubview:_syncToWindows];
     
@@ -95,6 +100,10 @@
     [savedImageView setBackgroundColor:[[UIColor whiteColor] colorWithAlphaComponent:0.5f]];
     [savedImageView.layer setBorderColor: [[UIColor whiteColor] CGColor]];
     [savedImageView.layer setBorderWidth: 1.0];
+    [savedImageView setTag:(NSInteger)count];
+    savedImageView.userInteractionEnabled = YES;
+    [savedImageView addGestureRecognizer:_recognizer];
+    
     [_cameraView addSubview:savedImageView];
     
     // save image to album
@@ -123,6 +132,14 @@
     if (![sender isKindOfClass:[UIButton class]]) return;
     
     [self syncToCloud];
+}
+
+-(void)handleSwipeFrom:(UISwipeGestureRecognizer *)recognizer {
+    //Get the View
+    UIImageView *imageView = (UIImageView*)recognizer.view;
+    [imageView removeFromSuperview];
+    
+    [_savedImages removeObjectAtIndex:[imageView tag]];
 }
 
 #pragma mark - image saving error handler

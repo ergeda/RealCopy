@@ -69,7 +69,7 @@
         CGFloat scaledWidth = targetWidth;
         CGFloat scaledHeight = targetHeight;
         
-        CGPoint thumbnailPoint = CGPointMake(0.0,0.0);
+        CGPoint thumbnailPoint = CGPointMake(0.0, 0.0);
         
         if (CGSizeEqualToSize(imageSize, targetSize) == NO) {
             CGFloat widthFactor = targetWidth / width;
@@ -127,7 +127,6 @@ cv::Mat segMask;
 cv::Mat fgScribbleMask;
 cv::Mat bgScribbleMask;
 
-// user clicked mouse buttons flags
 int numUsedBins;
 float varianceSquared;
 int scribbleRadius;
@@ -150,12 +149,12 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 
 @interface GCUIImageView()
 {
-    int currentMode;// indicate foreground or background, foreground as default
+    int currentMode; // indicate foreground or background, foreground as default
     CvScalar paintColor[2];
     
     int SCALE;
     
-    IplImage* img;
+    IplImage* markImg;
     CvPoint prev_pt;
     
     // Radar rect
@@ -166,6 +165,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 @property (nonatomic, strong) CameraShutterButton *backgroundSetterButton;
 @property (nonatomic, strong) CameraShutterButton *doneSetterButton;
 @property (nonatomic, strong) CameraShutterButton *exitButton;
+@property (nonatomic, strong) UIImage *roiImage;
 @property (nonatomic, strong) UIImage *resImage;
 
 @end
@@ -215,7 +215,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     return self;
 }
 
--(void)initColorPicker {
+-(void)initButtons {
     if (_foregroundSetterButton) {
         //Button Visual attribution
         _foregroundSetterButton.frame = (CGRect){0, 0, static_cast<CGFloat>(self.bounds.size.width * 0.18),
@@ -274,19 +274,28 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 }
 
 -(void)setupWithRadarSize:(CGRect)rect {
-    [self initColorPicker];
+    [self initButtons];
 
     // set radar rect
     radarRect = rect;
     
     // setup images
     if (self.image) {
+        // downsample
         self.image = [self.image scaleToSize:[self frameForImage:self.image inImageViewAspectFit:self].size];
-        // save a image copy before graphcut
+        
+        // save an image copy before graphcut
         _resImage = [UIImage imageWithCGImage:[self.image CGImage]];
+        
+        // show fore/background marks
+        markImg = [self CreateIplImageFromUIImage:self.image];
+        
+        // Region of Interest
+        CGRect roiRect = CGRectMake(0, (self.image.size.height - self.image.size.width) * 0.5, self.image.size.width, self.image.size.width);
+        _roiImage = [self.image getSubImage:roiRect];
+        
         // prepare for graph cut
-        img = [self CreateIplImageFromUIImage:self.image];
-        inputImg = [self cvMatFromUIImage:self.image];
+        inputImg = [self cvMatFromUIImage:_roiImage];
         cv::cvtColor(inputImg, inputImg, CV_RGBA2RGB);
         setupOthers();
     }
@@ -347,27 +356,44 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
                 GraphType::node_id currNodeId = i * inputImg.cols + j;
                 
                 // add hard constraints based on scribbles
-                if (fgScribbleMask.at<uchar>(i,j) == 255)
-                    myGraph->add_tweights(currNodeId,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5), 0);
-                else if (bgScribbleMask.at<uchar>(i,j) == 255)
-                    myGraph->add_tweights(currNodeId,0,(int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5));
+                if (fgScribbleMask.at<uchar>(i, j) == 255)
+                    myGraph->add_tweights(currNodeId, (int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5), 0);
+                else if (bgScribbleMask.at<uchar>(i, j) == 255)
+                    myGraph->add_tweights(currNodeId, 0, (int)ceil(INT32_CONST * HARD_CONSTRAINT_CONST + 0.5));
             }
         }
         
         myGraph -> maxflow();
         
+        CGRect roiFrame = [self frameForImage:_roiImage inImageViewAspectFit:self];
+        //segMask.create(2, inputImg.size, CV_8UC1);
+        int col = int(self.image.size.width);
+        int row = int(self.image.size.height);
+        segMask.create(row, col, CV_8UC1);
         // copy the segmentation results on to the result images
-        for (int i = 0; i<inputImg.rows * inputImg.cols; i++)
+        for (int i = 0; i<row * col; i++)
         {
-            // if it is foreground - color blue
-            if (myGraph->what_segment((GraphType::node_id)i ) == GraphType::SOURCE)
+            int y = i / col, x = i % col;
+            
+            if (x < roiFrame.origin.x || x >= roiFrame.origin.x + roiFrame.size.width ||
+                y < roiFrame.origin.y || y >= roiFrame.origin.y + roiFrame.size.height)
             {
-                segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 0;
+                segMask.at<uchar>(y, x) = 255; // mark as background
             }
-            // if it is background - color red
             else
             {
-                segMask.at<uchar>(i/inputImg.cols, i%inputImg.cols) = 255;
+                // calcuate node id
+                int ii = (y - roiFrame.origin.y)*roiFrame.size.width + (x - roiFrame.origin.x);
+                // if it is foreground
+                if (myGraph->what_segment((GraphType::node_id)ii) == GraphType::SOURCE)
+                {
+                    segMask.at<uchar>(y, x) = 0;
+                }
+                // if it is background
+                else
+                {
+                    segMask.at<uchar>(y, x) = 255;
+                }
             }
         }
         
@@ -436,7 +462,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     return finalImage;
 }
 
-- (IplImage*) CreateIplImageFromUIImage:(UIImage*)image
+- (IplImage*)CreateIplImageFromUIImage:(UIImage*)image
 {
     CGImageRef imageRef = image.CGImage;
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -461,7 +487,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     return ret;
 }
 
-- (UIImage*) CreateUIImageFromIplImage:(IplImage*)image
+- (UIImage*)CreateUIImageFromIplImage:(IplImage*)image
 {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     NSData *data = [NSData dataWithBytes:image->imageData length:image->imageSize];
@@ -615,13 +641,8 @@ int setupOthers()
     
     // this is the mask to keep the user scribbles
     fgScribbleMask.create(2, inputImg.size, CV_8UC1);
-    //cvZero(&fgScribbleMask);
     bgScribbleMask.create(2, inputImg.size, CV_8UC1);
-    //cvZero(&bgScribbleMask);
-    segMask.create(2, inputImg.size, CV_8UC1);
-    //cvZero(&segMask);
     showEdgesImg.create(2, inputImg.size, CV_32FC1);
-    //cvZero(&showEdgesImg);
     binPerPixelImg.create(2, inputImg.size,CV_32F);
 
     // get bin index for each image pixel, store it in binPerPixelImg
@@ -712,14 +733,9 @@ int setupOthers()
 
 - (void)drawLineLazySnapping:(CGPoint)locationPoint{
     if (self.image != nil) {
-        
-        CGRect imageFrame = [self frameForImage:self.image inImageViewAspectFit:self];
-        
-        CvPoint pt = cv::Point2f(locationPoint.x - imageFrame.origin.x, locationPoint.y - imageFrame.origin.y);
-        if(prev_pt.x < 0)
-            prev_pt = pt;
-
-        cvLine(img, prev_pt, pt, paintColor[currentMode], 5, 8, 0);
+        CGRect roiFrame = [self frameForImage:_roiImage inImageViewAspectFit:self];
+        CvPoint pt = cv::Point2f(locationPoint.x - roiFrame.origin.x, locationPoint.y - roiFrame.origin.y);
+        if(prev_pt.x < 0) prev_pt = pt;
         if (currentMode == 0) {
             line(fgScribbleMask, prev_pt, pt, 255, 5, 8, 0);
             line(bgScribbleMask, prev_pt, pt, 0, 5, 8, 0);
@@ -727,16 +743,22 @@ int setupOthers()
             line(bgScribbleMask, prev_pt, pt, 255, 5, 8, 0);
             line(fgScribbleMask, prev_pt, pt, 0, 5, 8, 0);
         }
+        
+        CGRect imageFrame = [self frameForImage:self.image inImageViewAspectFit:self];
+        CvPoint image_pt = cv::Point2f(locationPoint.x - imageFrame.origin.x, locationPoint.y - imageFrame.origin.y);
+        CvPoint image_prev_pt = cv::Point2f(prev_pt.x + roiFrame.origin.x - imageFrame.origin.x, prev_pt.y + roiFrame.origin.y - imageFrame.origin.y);
+        cvLine(markImg, image_prev_pt, image_pt, paintColor[currentMode], 5, 8, 0);
+        self.image = [self CreateUIImageFromIplImage:markImg];
+        
         prev_pt = pt;
-        self.image = [self CreateUIImageFromIplImage:img];
     }
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     CGPoint locationPoint = [[touches anyObject] locationInView:self];
-    CGRect imageFrame = [self frameForImage:self.image inImageViewAspectFit:self];
-    prev_pt = cv::Point2f(locationPoint.x - imageFrame.origin.x, locationPoint.y - imageFrame.origin.y);
+    CGRect roiFrame = [self frameForImage:_roiImage inImageViewAspectFit:self];
+    prev_pt = cv::Point2f(locationPoint.x - roiFrame.origin.x, locationPoint.y - roiFrame.origin.y);
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
