@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		445710DA1F6D7172008E250D /* splash2.png in Resources */ = {isa = PBXBuildFile; fileRef = 445710D91F6D7172008E250D /* splash2.png */; };
 		448B70151F654DA700DBA03A /* CameraSessionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B6FFC1F654DA700DBA03A /* CameraSessionView.m */; };
 		448B70161F654DA700DBA03A /* CameraDismissButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70001F654DA700DBA03A /* CameraDismissButton.m */; };
 		448B70171F654DA700DBA03A /* CameraFlashButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70021F654DA700DBA03A /* CameraFlashButton.m */; };
@@ -71,7 +72,6 @@
 		448B70C91F65765E00DBA03A /* SVProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70971F65765D00DBA03A /* SVProgressHUD.m */; };
 		448B70D71F664D0D00DBA03A /* GCUIImageView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 448B70D61F664D0D00DBA03A /* GCUIImageView.mm */; };
 		448B70DA1F66AEFC00DBA03A /* RadarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 448B70D91F66AEFC00DBA03A /* RadarView.m */; };
-		448B70DE1F67E5D400DBA03A /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 448B70DD1F67E5D400DBA03A /* splash.png */; };
 		44C06A8D1F6542F7003802DD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 44C06A8C1F6542F7003802DD /* main.m */; };
 		44C06A901F6542F7003802DD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 44C06A8F1F6542F7003802DD /* AppDelegate.m */; };
 		44C06A931F6542F7003802DD /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44C06A921F6542F7003802DD /* ViewController.m */; };
@@ -101,6 +101,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		445710D91F6D7172008E250D /* splash2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = splash2.png; path = ../../../Desktop/splash2.png; sourceTree = "<group>"; };
 		448B6FFB1F654DA700DBA03A /* CameraSessionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraSessionView.h; sourceTree = "<group>"; };
 		448B6FFC1F654DA700DBA03A /* CameraSessionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraSessionView.m; sourceTree = "<group>"; };
 		448B6FFF1F654DA700DBA03A /* CameraDismissButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraDismissButton.h; sourceTree = "<group>"; };
@@ -224,7 +225,6 @@
 		448B70D61F664D0D00DBA03A /* GCUIImageView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GCUIImageView.mm; sourceTree = "<group>"; };
 		448B70D81F66AEFC00DBA03A /* RadarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RadarView.h; sourceTree = "<group>"; };
 		448B70D91F66AEFC00DBA03A /* RadarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RadarView.m; sourceTree = "<group>"; };
-		448B70DD1F67E5D400DBA03A /* splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = splash.png; path = ../../../Desktop/splash.png; sourceTree = "<group>"; };
 		44C06A881F6542F7003802DD /* RealCopy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RealCopy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44C06A8C1F6542F7003802DD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		44C06A8E1F6542F7003802DD /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -658,7 +658,7 @@
 		44C06A8B1F6542F7003802DD /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				448B70DD1F67E5D400DBA03A /* splash.png */,
+				445710D91F6D7172008E250D /* splash2.png */,
 				44C06A8C1F6542F7003802DD /* main.m */,
 			);
 			name = "Supporting Files";
@@ -802,12 +802,12 @@
 				44C06A9B1F6542F7003802DD /* LaunchScreen.storyboard in Resources */,
 				448B70B91F65765D00DBA03A /* _CLImageEditorViewController.xib in Resources */,
 				448B70BA1F65765D00DBA03A /* CHANGES.TXT in Resources */,
+				445710DA1F6D7172008E250D /* splash2.png in Resources */,
 				448B70BD1F65765D00DBA03A /* README.TXT in Resources */,
 				448B70981F65765D00DBA03A /* CLImageEditor.bundle in Resources */,
 				448B70C81F65765E00DBA03A /* SVProgressHUD.bundle in Resources */,
 				44C06A981F6542F7003802DD /* Assets.xcassets in Resources */,
 				448B701D1F654DA700DBA03A /* PaintCodeFile.pcvd in Resources */,
-				448B70DE1F67E5D400DBA03A /* splash.png in Resources */,
 				448B701C1F654DA700DBA03A /* Cool Camera Mockup.sketch in Resources */,
 				44C06A961F6542F7003802DD /* Main.storyboard in Resources */,
 			);

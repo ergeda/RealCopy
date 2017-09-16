@@ -21,18 +21,18 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="splash.png" translatesAutoresizingMaskIntoConstraints="NO" id="EYc-Q0-d7j">
-                                <rect key="frame" x="50" y="221" width="274" height="224"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="splash2.png" translatesAutoresizingMaskIntoConstraints="NO" id="EYc-Q0-d7j">
+                                <rect key="frame" x="50" y="196" width="274" height="274"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="224" id="Fsl-Zf-298"/>
-                                    <constraint firstAttribute="width" constant="274" id="Xcj-Wp-J6u"/>
+                                    <constraint firstAttribute="width" constant="274" id="9m6-eF-XHU"/>
+                                    <constraint firstAttribute="height" constant="274" id="FYv-tU-Gao"/>
                                 </constraints>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="EYc-Q0-d7j" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Ecs-CL-AM8"/>
-                            <constraint firstItem="EYc-Q0-d7j" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="jY9-5s-CqZ"/>
+                            <constraint firstItem="EYc-Q0-d7j" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="5p9-dR-TPA"/>
+                            <constraint firstItem="EYc-Q0-d7j" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="99A-W1-Pry"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -42,6 +42,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="splash.png" width="274" height="224"/>
+        <image name="splash2.png" width="274" height="274"/>
     </resources>
 </document>
