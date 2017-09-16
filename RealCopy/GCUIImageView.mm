@@ -138,8 +138,6 @@ int numBinsPerChannel;
 float INT32_CONST;
 float HARD_CONSTRAINT_CONST;
 
-int NEIGHBORHOOD;
-
 typedef NS_ENUM(NSInteger, BarButtonTag) {
     ForegroundSetterTag,
     BackgroundSetterTag,
@@ -194,7 +192,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         // user clicked mouse buttons flags
         numUsedBins = 0;
         varianceSquared = 0;
-        scribbleRadius = 10;
+        scribbleRadius = 5;
 
         // default arguments
         bha_slope = 0.1f;
@@ -202,8 +200,6 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         
         INT32_CONST = 1000;
         HARD_CONSTRAINT_CONST = 1000;
-        
-        NEIGHBORHOOD = 1;
         
         currentMode = 0; // indicate foreground or background, foreground as default
         paintColor[0] = CV_RGB(0, 0, 255);
@@ -275,7 +271,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 
 -(void)setupWithRadarSize:(CGRect)rect {
     [self initButtons];
-
+    
     // set radar rect
     radarRect = rect;
     
@@ -366,7 +362,6 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         myGraph -> maxflow();
         
         CGRect roiFrame = [self frameForImage:_roiImage inImageViewAspectFit:self];
-        //segMask.create(2, inputImg.size, CV_8UC1);
         int col = int(self.image.size.width);
         int row = int(self.image.size.height);
         segMask.create(row, col, CV_8UC1);
@@ -552,7 +547,7 @@ void getBinPerPixel(cv::Mat & binPerPixelImg, cv::Mat & inputImg, int numBinsPer
         }
     }
     double maxBin;
-    minMaxLoc(binPerPixelImg,NULL,&maxBin);
+    minMaxLoc(binPerPixelImg, NULL, &maxBin);
     numUsedBins = (int) maxBin + 1;
     
     occupiedBinNewIdx.clear();
@@ -640,10 +635,10 @@ int setupOthers()
     }
     
     // this is the mask to keep the user scribbles
-    fgScribbleMask.create(2, inputImg.size, CV_8UC1);
-    bgScribbleMask.create(2, inputImg.size, CV_8UC1);
-    showEdgesImg.create(2, inputImg.size, CV_32FC1);
-    binPerPixelImg.create(2, inputImg.size,CV_32F);
+    fgScribbleMask.create(2, inputImg.size, CV_8UC1); fgScribbleMask.setTo(cv::Scalar::all(0));
+    bgScribbleMask.create(2, inputImg.size, CV_8UC1); bgScribbleMask.setTo(cv::Scalar::all(0));
+    showEdgesImg.create(2, inputImg.size, CV_32FC1); showEdgesImg.setTo(cv::Scalar::all(0));
+    binPerPixelImg.create(2, inputImg.size,CV_32F); binPerPixelImg.setTo(cv::Scalar::all(0));
 
     // get bin index for each image pixel, store it in binPerPixelImg
     getBinPerPixel(binPerPixelImg, inputImg, numBinsPerChannel, numUsedBins);
@@ -651,6 +646,7 @@ int setupOthers()
     // compute the variance of image edges between neighbors
     getEdgeVariance(inputImg, showEdgesImg, varianceSquared);
     
+    delete myGraph;
     myGraph = new GraphType(/*estimated # of nodes*/ inputImg.rows * inputImg.cols + numUsedBins,
                             /*estimated # of edges=11 spatial neighbors and one link to auxiliary*/ 12 * inputImg.rows * inputImg.cols);
     myGraph->add_node((int)inputImg.cols * inputImg.rows + numUsedBins);
@@ -737,17 +733,17 @@ int setupOthers()
         CvPoint pt = cv::Point2f(locationPoint.x - roiFrame.origin.x, locationPoint.y - roiFrame.origin.y);
         if(prev_pt.x < 0) prev_pt = pt;
         if (currentMode == 0) {
-            line(fgScribbleMask, prev_pt, pt, 255, 5, 8, 0);
-            line(bgScribbleMask, prev_pt, pt, 0, 5, 8, 0);
+            line(fgScribbleMask, prev_pt, pt, 255, scribbleRadius);
+            line(bgScribbleMask, prev_pt, pt, 0, scribbleRadius);
         }else{
-            line(bgScribbleMask, prev_pt, pt, 255, 5, 8, 0);
-            line(fgScribbleMask, prev_pt, pt, 0, 5, 8, 0);
+            line(bgScribbleMask, prev_pt, pt, 255, scribbleRadius);
+            line(fgScribbleMask, prev_pt, pt, 0, scribbleRadius);
         }
         
         CGRect imageFrame = [self frameForImage:self.image inImageViewAspectFit:self];
         CvPoint image_pt = cv::Point2f(locationPoint.x - imageFrame.origin.x, locationPoint.y - imageFrame.origin.y);
         CvPoint image_prev_pt = cv::Point2f(prev_pt.x + roiFrame.origin.x - imageFrame.origin.x, prev_pt.y + roiFrame.origin.y - imageFrame.origin.y);
-        cvLine(markImg, image_prev_pt, image_pt, paintColor[currentMode], 5, 8, 0);
+        cvLine(markImg, image_prev_pt, image_pt, paintColor[currentMode], scribbleRadius);
         self.image = [self CreateUIImageFromIplImage:markImg];
         
         prev_pt = pt;
