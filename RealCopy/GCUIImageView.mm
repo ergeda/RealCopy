@@ -116,16 +116,21 @@
 typedef Graph<int,int,int> GraphType;
 GraphType *myGraph;
 
-CvPoint prev_pt;
 // images
 cv::Mat inputImg;
 cv::Mat showEdgesImg;
 cv::Mat binPerPixelImg;
-cv::Mat segMask;
 
-// mask
+// show mask
+cv::Mat orignalImg;
+cv::Mat overlayImg;
+cv::Mat maskedImg;
+
+// fore/background mask
 cv::Mat fgScribbleMask;
 cv::Mat bgScribbleMask;
+// segmentation mask
+cv::Mat segMask;
 
 int numUsedBins;
 float varianceSquared;
@@ -149,10 +154,7 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
 {
     int currentMode; // indicate foreground or background, foreground as default
     CvScalar paintColor[2];
-    
-    int SCALE;
-    
-    IplImage* markImg;
+
     CvPoint prev_pt;
     
     // Radar rect
@@ -206,7 +208,6 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         paintColor[1] = CV_RGB(255, 0, 0);
         
         prev_pt = {-1, -1};
-        SCALE = 1;
     }
     return self;
 }
@@ -280,17 +281,19 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
         // downsample
         self.image = [self.image scaleToSize:[self frameForImage:self.image inImageViewAspectFit:self].size];
         
-        // save an image copy before graphcut
+        // save an clean image copy before graphcut
         _resImage = [UIImage imageWithCGImage:[self.image CGImage]];
         
-        // show fore/background marks
-        markImg = [self CreateIplImageFromUIImage:self.image];
+        // show fore/background mask
+        orignalImg = [self cvMatFromUIImage:self.image];
+        orignalImg.copyTo(overlayImg);
+        orignalImg.copyTo(maskedImg);
         
         // Region of Interest
         CGRect roiRect = CGRectMake(0, (self.image.size.height - self.image.size.width) * 0.5, self.image.size.width, self.image.size.width);
         _roiImage = [self.image getSubImage:roiRect];
         
-        // prepare for graph cut
+        // ROI images
         inputImg = [self cvMatFromUIImage:_roiImage];
         cv::cvtColor(inputImg, inputImg, CV_RGBA2RGB);
         setupOthers();
@@ -455,55 +458,6 @@ typedef NS_ENUM(NSInteger, BarButtonTag) {
     CGColorSpaceRelease(colorSpace);
     
     return finalImage;
-}
-
-- (IplImage*)CreateIplImageFromUIImage:(UIImage*)image
-{
-    CGImageRef imageRef = image.CGImage;
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    IplImage *iplimage = cvCreateImage(cvSize(image.size.width, image.size.height), IPL_DEPTH_8U, 4);
-    CGContextRef contextRef = CGBitmapContextCreate(iplimage->imageData,
-                                                    iplimage->width,
-                                                    iplimage->height,
-                                                    iplimage->depth,
-                                                    iplimage->widthStep,
-                                                    colorSpace,
-                                                    kCGImageAlphaPremultipliedLast|kCGBitmapByteOrderDefault);
-    CGContextDrawImage(contextRef,
-                       CGRectMake(0, 0, image.size.width, image.size.height),
-                       imageRef);
-    CGContextRelease(contextRef);
-    CGColorSpaceRelease(colorSpace);
-    
-    IplImage *ret = cvCreateImage(cvGetSize(iplimage), IPL_DEPTH_8U, 3);
-    cvCvtColor(iplimage, ret, CV_RGBA2RGB);
-    cvReleaseImage(&iplimage);
-    
-    return ret;
-}
-
-- (UIImage*)CreateUIImageFromIplImage:(IplImage*)image
-{
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    NSData *data = [NSData dataWithBytes:image->imageData length:image->imageSize];
-    CGDataProviderRef provider =
-    CGDataProviderCreateWithCFData((CFDataRef)data);
-    CGImageRef imageRef = CGImageCreate(image->width,
-                                        image->height,
-                                        image->depth,
-                                        image->depth * image->nChannels,
-                                        image->widthStep,
-                                        colorSpace,
-                                        kCGImageAlphaNone|kCGBitmapByteOrderDefault,
-                                        provider,
-                                        NULL,
-                                        false,
-                                        kCGRenderingIntentDefault);
-    UIImage *ret = [UIImage imageWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-    CGDataProviderRelease(provider);
-    CGColorSpaceRelease(colorSpace);
-    return ret;
 }
 
 struct Node
@@ -733,18 +687,21 @@ int setupOthers()
         CvPoint pt = cv::Point2f(locationPoint.x - roiFrame.origin.x, locationPoint.y - roiFrame.origin.y);
         if(prev_pt.x < 0) prev_pt = pt;
         if (currentMode == 0) {
-            line(fgScribbleMask, prev_pt, pt, 255, scribbleRadius);
-            line(bgScribbleMask, prev_pt, pt, 0, scribbleRadius);
+            cv::line(fgScribbleMask, prev_pt, pt, 255, scribbleRadius);
+            cv::line(bgScribbleMask, prev_pt, pt, 0, scribbleRadius);
         }else{
-            line(bgScribbleMask, prev_pt, pt, 255, scribbleRadius);
-            line(fgScribbleMask, prev_pt, pt, 0, scribbleRadius);
+            cv::line(bgScribbleMask, prev_pt, pt, 255, scribbleRadius);
+            cv::line(fgScribbleMask, prev_pt, pt, 0, scribbleRadius);
         }
         
         CGRect imageFrame = [self frameForImage:self.image inImageViewAspectFit:self];
         CvPoint image_pt = cv::Point2f(locationPoint.x - imageFrame.origin.x, locationPoint.y - imageFrame.origin.y);
         CvPoint image_prev_pt = cv::Point2f(prev_pt.x + roiFrame.origin.x - imageFrame.origin.x, prev_pt.y + roiFrame.origin.y - imageFrame.origin.y);
-        cvLine(markImg, image_prev_pt, image_pt, paintColor[currentMode], scribbleRadius);
-        self.image = [self CreateUIImageFromIplImage:markImg];
+        
+        double alpha = 0.5;
+        cv::line(overlayImg, image_prev_pt, image_pt, paintColor[currentMode], scribbleRadius);
+        cv::addWeighted(overlayImg, alpha, orignalImg, 1 - alpha, 0, maskedImg);
+        self.image = [self UIImageFromCVMat:maskedImg];
         
         prev_pt = pt;
     }
